@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0627dda6-b447-4182-bd3b-8bf5dc10d5f3" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="83face59-d93a-434f-8302-355da8956736" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" />
+	</db:config>
+	<flow name="craftdatabaseanotherFlow" doc:id="e7e4ba90-4a8b-4b2e-9901-d142089aefe9" >
+		<http:listener doc:name="Listener" doc:id="d253bf0b-523b-46fd-ae5b-1ff87c1d37f6" config-ref="HTTP_Listener_config" path="/ddl"/>
+		<db:execute-ddl doc:name="Execute DDL" doc:id="3bbb79dd-0d9f-45d9-9f35-baf7c3dacc5c" config-ref="Database_Config">
+			<db:sql ><![CDATA[create database craftb43]]></db:sql>
+		</db:execute-ddl>
+		<ee:transform doc:name="Transform Message" doc:id="f467c95c-00e5-4062-ad1a-f72c3a6ec2fa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully Executed"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow1" doc:id="aca4a221-1192-428c-8242-9ec185bebf6e" >
+		<http:listener doc:name="Listener" doc:id="b33f167c-1d29-4bbf-ae84-7d6718ccab30" config-ref="HTTP_Listener_config" path="/createtable"/>
+		<db:execute-ddl doc:name="Execute DDL" doc:id="a18d2962-92b0-4986-a829-0508c59e2513" config-ref="Database_Config">
+			<db:sql ><![CDATA[drop database mintedb;]]></db:sql>
+		</db:execute-ddl>
+		<ee:transform doc:name="Transform Message" doc:id="e42cf4c5-a41d-478d-84e6-4b96bf65476e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Sucecssfull"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow2" doc:id="edd83333-8567-40d7-89ef-220f5635ad86" >
+		<http:listener doc:name="Listener" doc:id="b03cf70a-6cd8-44fc-9387-434b203a9891" config-ref="HTTP_Listener_config" path="/insert"/>
+		<db:insert doc:name="Insert" doc:id="404a8322-7189-40c0-90fc-d532c23f5235" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into craftb43.students (fullname, age, address) values (:fullname, :age, :address)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	fullname: payload.fullname,
+	age: payload.age,
+	address: payload.address
+	
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="fb37d12a-f2c9-4652-8a12-1b5cd1cc0bcf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully Inserted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow3" doc:id="84d50768-7b3d-4887-a26d-57f3b0dc4fa9" >
+		<http:listener doc:name="Listener" doc:id="1d5c28f3-a962-4611-90d0-b8ac4a0e6f13" config-ref="HTTP_Listener_config" path="/update"/>
+		<db:update doc:name="Update" doc:id="fec4f2e5-b168-4c08-ad8c-34e669b58c80" config-ref="Database_Config">
+			<db:sql ><![CDATA[update craftb43.students set age=:age, address=:address where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	age: payload.age,
+	address: payload.address,
+	id: attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="cf777129-bb4b-476a-8a0a-56095b64243f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully Updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow4" doc:id="672c5d65-1c27-4113-92e7-aa487f871694" >
+		<http:listener doc:name="Listener" doc:id="2925402c-b2bf-442c-a019-e8d86b743545" config-ref="HTTP_Listener_config" path="/delete"/>
+		<db:delete doc:name="Delete" doc:id="cb6602e7-81ec-458a-ad0c-759fe38857c8" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from craftb43.students where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="be2b3a89-c8ef-46eb-9307-7bd24329d262" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully Deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow5" doc:id="f84eb162-7a2a-440d-8b25-66bab1675207" >
+		<http:listener doc:name="Listener" doc:id="4e59bc82-336a-4e50-a76f-061dfdb450ab" config-ref="HTTP_Listener_config" path="/select"/>
+		<db:select doc:name="Select" doc:id="f0ae5138-7a93-4a63-b8cb-3e75713e97f9" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM amazon.customers;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="92c0761e-394a-4a13-ae44-94b2d2f7d392" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabaseanotherFlow6" doc:id="5361b382-b482-46b2-a423-1dac682744f7" >
+		<http:listener doc:name="Listener" doc:id="320fd737-f302-42ba-af9a-714bf25327c9" config-ref="HTTP_Listener_config" path="/query"/>
+		<db:query-single doc:name="Query single" doc:id="5a1c5304-2999-4240-b733-ab0b62a44d97" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from amazon.customers;]]></db:sql>
+		</db:query-single>
+		<ee:transform doc:name="Transform Message" doc:id="eae903ec-4616-4339-9dc7-d9e82ae6fc50" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
