@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="83face59-d93a-434f-8302-355da8956736" >
-		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" />
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="craftb43"/>
 	</db:config>
 	<flow name="craftdatabaseanotherFlow" doc:id="e7e4ba90-4a8b-4b2e-9901-d142089aefe9" >
 		<http:listener doc:name="Listener" doc:id="d253bf0b-523b-46fd-ae5b-1ff87c1d37f6" config-ref="HTTP_Listener_config" path="/ddl"/>
@@ -47,7 +47,7 @@ output application/json
 	<flow name="craftdatabaseanotherFlow2" doc:id="edd83333-8567-40d7-89ef-220f5635ad86" >
 		<http:listener doc:name="Listener" doc:id="b03cf70a-6cd8-44fc-9387-434b203a9891" config-ref="HTTP_Listener_config" path="/insert"/>
 		<db:insert doc:name="Insert" doc:id="404a8322-7189-40c0-90fc-d532c23f5235" config-ref="Database_Config">
-			<db:sql ><![CDATA[insert into craftb43.students (fullname, age, address) values (:fullname, :age, :address)]]></db:sql>
+			<db:sql ><![CDATA[insert into students (fullname, age, address) values (:fullname, :age, :address)]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	fullname: payload.fullname,
 	age: payload.age,
@@ -69,7 +69,7 @@ output application/json
 	<flow name="craftdatabaseanotherFlow3" doc:id="84d50768-7b3d-4887-a26d-57f3b0dc4fa9" >
 		<http:listener doc:name="Listener" doc:id="1d5c28f3-a962-4611-90d0-b8ac4a0e6f13" config-ref="HTTP_Listener_config" path="/update"/>
 		<db:update doc:name="Update" doc:id="fec4f2e5-b168-4c08-ad8c-34e669b58c80" config-ref="Database_Config">
-			<db:sql ><![CDATA[update craftb43.students set age=:age, address=:address where id=:id]]></db:sql>
+			<db:sql ><![CDATA[update students set age=:age, address=:address where id=:id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	age: payload.age,
 	address: payload.address,

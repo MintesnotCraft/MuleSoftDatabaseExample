@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="craftdatabasesecondFlow" doc:id="35872d90-319f-47eb-a636-32a1433e5699" >
+		<http:listener doc:name="Listener" doc:id="03de9629-5d7a-4ec7-9a8f-8f5eae866516" config-ref="HTTP_Listener_config" path="/bulkinsert"/>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="7171f5e0-e079-4527-bd6a-7dd2da1b27a9" config-ref="Database_Config">
+			<db:bulk-input-parameters ><![CDATA[#[payload map(value, index) -> {
+	fullname: value.fullname,
+	age: value.age,
+	address: value.address
+}]]]></db:bulk-input-parameters>
+			<db:sql ><![CDATA[insert into students(fullname, age, address) values (:fullname, :age, :address)]]></db:sql>
+		</db:bulk-insert>
+		<ee:transform doc:name="Transform Message" doc:id="04689e82-13d2-4e39-8079-285b1ad9bedf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully inserted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabasesecondFlow1" doc:id="175a644d-6160-470c-80c0-d8a3d14ce24c" >
+		<http:listener doc:name="Listener" doc:id="26e158b8-842c-4886-ab05-7c943b2c6b43" config-ref="HTTP_Listener_config" path="/bulkupdate"/>
+		<db:bulk-update doc:name="Bulk update" doc:id="0376eb1c-9e58-45c8-b6f7-199c5fa70905" config-ref="Database_Config">
+			<db:bulk-input-parameters ><![CDATA[#[payload map(value,index) -> {
+	age: value.age,
+	address: value.address,
+	id: value.id
+}]]]></db:bulk-input-parameters>
+			<db:sql ><![CDATA[update craftb43.students set age=:age, address=:address where id=:id]]></db:sql>
+		</db:bulk-update>
+		<ee:transform doc:name="Transform Message" doc:id="09af8409-5bcc-4afd-8fa0-47fccac5a0ff" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabasesecondFlow2" doc:id="d95186d7-92d1-4469-afeb-7b751e9a4434" >
+		<http:listener doc:name="Listener" doc:id="a2bde3a0-f8f9-490f-87f7-99fa2ef95712" config-ref="HTTP_Listener_config" path="/bulkdelete"/>
+		<db:bulk-delete doc:name="Bulk delete" doc:id="9f0c4ed4-1c37-4db8-bd79-f1793773f15d" config-ref="Database_Config">
+			<db:bulk-input-parameters ><![CDATA[#[payload map (value, index) -> {
+	id: value.id
+}]]]></db:bulk-input-parameters>
+			<db:sql ><![CDATA[delete from craftb43.students where id=:id]]></db:sql>
+		</db:bulk-delete>
+		<ee:transform doc:name="Transform Message" doc:id="a2e0b4c3-0e26-4e67-82a1-d638103bab6c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Successfully Deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabasesecondFlow3" doc:id="0669050a-253e-4c72-b338-771411d32fd7" >
+		<http:listener doc:name="Listener" doc:id="8f91a866-253e-4752-a1e7-bc7fff3a49c1" config-ref="HTTP_Listener_config" path="/stored"/>
+		<db:stored-procedure doc:name="Stored procedure" doc:id="22e184d1-cd72-4c3d-8d0e-07dc1cae8013" config-ref="Database_Config">
+			<db:sql ><![CDATA[call student_procedure()]]></db:sql>
+		</db:stored-procedure>
+		<ee:transform doc:name="Transform Message" doc:id="9f2eaa1e-dfd4-47cf-978d-02d5da4cb158" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="craftdatabasesecondFlow5" doc:id="964d9f16-54d6-4003-856c-26fe531b2080" >
+		<db:listener table="students" doc:name="On Table Row" doc:id="fc8bab62-7581-4651-a841-8eb7c360f660" config-ref="Database_Config" watermarkColumn="id" idColumn="id">
+			<scheduling-strategy >
+				<cron expression="0 0 13 26 5 ? 2026"/>
+			</scheduling-strategy>
+		</db:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="6bc8a8bc-90c5-4674-8fb8-fcf0718c3e41" message="#[payload]"/>
+	</flow>
+	<flow name="craftdatabasesecondFlow4" doc:id="137558ff-9d93-406f-8307-bf38de44aaf4" >
+		<http:listener doc:name="Listener" doc:id="195e081a-39bc-47f8-b07b-2883773d6483" config-ref="HTTP_Listener_config" path="/execute"/>
+		<db:execute-script doc:name="Execute script" doc:id="7d3df748-6b38-4aaa-a893-01e18bc6e21e" config-ref="Database_Config" file="C:\Users\craft\Videos\SampleSQLScripts\amazoninvocingdatabase.sql">
+		</db:execute-script>
+		<ee:transform doc:name="Transform Message" doc:id="8c29caee-99fa-4551-8112-f4fab95c8178" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Success"
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
